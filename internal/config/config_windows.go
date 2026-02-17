@@ -19,3 +19,8 @@ func configPathNextToExe() string {
 	}
 	return filepath.Join(filepath.Dir(exe), "config.yaml")
 }
+
+// defaultInterfaceName returns the default TUN interface name for Windows.
+func defaultInterfaceName() string {
+	return "VPNClient"
+}

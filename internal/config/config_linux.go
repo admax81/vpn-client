@@ -15,3 +15,8 @@ func GetConfigPath() string {
 	}
 	return filepath.Join(filepath.Dir(exe), "config.yaml")
 }
+
+// defaultInterfaceName returns the default TUN interface name for Linux.
+func defaultInterfaceName() string {
+	return "VPNClient"
+}

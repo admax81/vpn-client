@@ -11,6 +11,11 @@ import (
 	"github.com/user/vpn-client/internal/procutil"
 )
 
+// normalizeInterfaceName returns the name as-is on Windows (no restrictions).
+func normalizeInterfaceName(name string) string {
+	return name
+}
+
 // assignIP assigns an IP address to the adapter (Windows).
 func (a *Adapter) assignIP(prefix netip.Prefix) error {
 	mask := net.CIDRMask(prefix.Bits(), 32)

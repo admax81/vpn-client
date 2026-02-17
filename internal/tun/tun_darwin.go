@@ -6,8 +6,21 @@ import (
 	"fmt"
 	"net/netip"
 	"os/exec"
+	"regexp"
 	"strings"
 )
+
+var utunRegex = regexp.MustCompile(`^utun\d*$`)
+
+// normalizeInterfaceName ensures the interface name is valid for macOS.
+// macOS requires TUN interface names to match utun[0-9]*.
+// If the name doesn't match, fall back to "utun" (OS auto-assigns number).
+func normalizeInterfaceName(name string) string {
+	if utunRegex.MatchString(name) {
+		return name
+	}
+	return "utun"
+}
 
 // assignIP assigns an IP address to the adapter (macOS).
 func (a *Adapter) assignIP(prefix netip.Prefix) error {

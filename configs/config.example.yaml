@@ -100,6 +100,9 @@ dns:
 # ============================================================================
 # NETWORK INTERFACE
 # ============================================================================
+# On macOS, the name MUST be "utun" or "utun<N>" (e.g. utun5).
+# Using "utun" lets the OS auto-assign the next available number.
+# On Windows/Linux, any name is accepted (default: "VPNClient").
 interface:
   name: "VPNClient"
   mtu: 1420

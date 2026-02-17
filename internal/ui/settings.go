@@ -76,7 +76,7 @@ func loadAppConfig() *AppConfig {
 	cfg.WireGuard.Peer.PersistentKeepalive = 25
 	cfg.SSH.Port = 22
 	cfg.Routing.DNSRefreshInterval = 300
-	cfg.Interface.Name = "VPNClient"
+	cfg.Interface.Name = vpnconfig.DefaultConfig().Interface.Name
 	cfg.Interface.MTU = 1420
 	cfg.Interface.Metric = 5
 	cfg.Killswitch.AllowLAN = true

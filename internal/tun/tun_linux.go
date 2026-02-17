@@ -8,6 +8,11 @@ import (
 	"os/exec"
 )
 
+// normalizeInterfaceName returns the name as-is on Linux (no restrictions).
+func normalizeInterfaceName(name string) string {
+	return name
+}
+
 // assignIP assigns an IP address to the adapter (Linux).
 func (a *Adapter) assignIP(prefix netip.Prefix) error {
 	cmd := exec.Command("ip", "addr", "add", prefix.String(), "dev", a.name)

@@ -123,7 +123,7 @@ func DefaultConfig() *Config {
 			Domains:  []string{},
 		},
 		Interface: Interface{
-			Name:   "VPNClient",
+			Name:   defaultInterfaceName(),
 			MTU:    1420,
 			Metric: 5,
 		},

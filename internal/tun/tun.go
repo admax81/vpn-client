@@ -43,7 +43,7 @@ func New(cfg *Config) (*Adapter, error) {
 	}
 
 	return &Adapter{
-		name:   cfg.Name,
+		name:   normalizeInterfaceName(cfg.Name),
 		mtu:    cfg.MTU,
 		metric: cfg.Metric,
 	}, nil

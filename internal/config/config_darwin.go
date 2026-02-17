@@ -28,3 +28,9 @@ func GetConfigPath() string {
 	}
 	return filepath.Join(filepath.Dir(exe), "config.yaml")
 }
+
+// defaultInterfaceName returns the default TUN interface name for macOS.
+// macOS requires utun[0-9]* — using "utun" lets the OS auto-assign a number.
+func defaultInterfaceName() string {
+	return "utun"
+}

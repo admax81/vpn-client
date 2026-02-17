@@ -7,9 +7,21 @@ import (
 	"path/filepath"
 )
 
-// GetConfigPath returns the configuration path next to the executable.
-// For .app bundles this resolves to Contents/MacOS/ inside the bundle.
+// GetConfigPath returns the configuration path.
+// When running as a .app bundle the config is stored in
+// ~/Library/Application Support/VPN Client/ so that it
+// survives app updates and is writable (the bundle itself is read-only).
+// Falls back to the directory next to the executable for CLI usage.
 func GetConfigPath() string {
+	home, err := os.UserHomeDir()
+	if err == nil {
+		dir := filepath.Join(home, "Library", "Application Support", "VPN Client")
+		// Ensure the directory exists
+		_ = os.MkdirAll(dir, 0755)
+		return filepath.Join(dir, "config.yaml")
+	}
+
+	// Fallback: next to executable (CLI / non-bundle usage)
 	exe, err := os.Executable()
 	if err != nil {
 		return "config.yaml"

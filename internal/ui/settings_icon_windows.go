@@ -10,7 +10,7 @@ import (
 
 // createWindowIcon generates a walk.Icon from the shield ICO data.
 func createWindowIcon() *walk.Icon {
-	icoData := GenerateMaskIcon(85, 187, 187)
+	icoData := GenerateShieldIcon(85, 187, 187)
 
 	tmpFile, err := os.CreateTemp("", "vpn-icon-*.ico")
 	if err != nil {

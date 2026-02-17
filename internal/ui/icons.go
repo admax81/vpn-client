@@ -1,39 +1,33 @@
 package ui
 
+import (
+	"bytes"
+	"image"
+	"image/color"
+	"image/png"
+	"runtime"
+)
+
 // GetIcon returns the icon data for the given state
 func GetIcon(state string) []byte {
 	switch state {
 	case "connected":
-		return GenerateMaskIcon(30, 200, 90) // Green
+		return GenerateShieldIcon(30, 200, 90) // Green
 	case "connecting":
-		return GenerateMaskIcon(240, 190, 30) // Yellow/Amber
+		return GenerateShieldIcon(240, 190, 30) // Yellow/Amber
 	case "error":
-		return GenerateMaskIcon(220, 55, 55) // Red
+		return GenerateShieldIcon(220, 55, 55) // Red
 	default:
-		return GenerateMaskIcon(160, 160, 160) // Gray (disconnected)
+		return GenerateShieldIcon(160, 160, 160) // Gray (disconnected)
 	}
 }
 
-// GenerateMaskIcon renders a Guy Fawkes / Anonymous mask icon at 32x32 with transparent background
-func GenerateMaskIcon(cr, cg, cb byte) []byte {
+// GenerateShieldIcon renders a simple filled shield icon at 32x32
+func GenerateShieldIcon(cr, cg, cb byte) []byte {
 	const size = 32
-	pixels := make([]byte, size*size*4)
+	img := image.NewRGBA(image.Rect(0, 0, size, size))
 
-	setPx := func(x, y int, r, g, b, a byte) {
-		if x < 0 || x >= size || y < 0 || y >= size {
-			return
-		}
-		off := ((size-1-y)*size + x) * 4
-		ea := float64(pixels[off+3]) / 255.0
-		na := float64(a) / 255.0
-		oa := na + ea*(1-na)
-		if oa > 0 {
-			pixels[off+0] = byte((float64(b)*na + float64(pixels[off+0])*ea*(1-na)) / oa)
-			pixels[off+1] = byte((float64(g)*na + float64(pixels[off+1])*ea*(1-na)) / oa)
-			pixels[off+2] = byte((float64(r)*na + float64(pixels[off+2])*ea*(1-na)) / oa)
-			pixels[off+3] = byte(oa * 255)
-		}
-	}
+	cx := float64(size) / 2.0
 
 	abs := func(v float64) float64 {
 		if v < 0 {
@@ -42,58 +36,22 @@ func GenerateMaskIcon(cr, cg, cb byte) []byte {
 		return v
 	}
 
-	sqrt := func(v float64) float64 {
-		if v <= 0 {
-			return 0
-		}
-		r := v
-		for i := 0; i < 20; i++ {
-			r = (r + v/r) / 2
-		}
-		return r
-	}
-
-	// Dark variant for features
-	var dr, dg, db byte
-	lum := int(cr)*299 + int(cg)*587 + int(cb)*114
-	if lum > 128000 {
-		dr, dg, db = 40, 40, 40
-	} else {
-		dr, dg, db = cr/3, cg/3, cb/3
-	}
-
-	// Center of mask
-	cx := 15.5
-
-	// ======== 1. Face outline (egg/shield shape) ========
-	// Symmetric face: wide at eyes (y~10), narrow pointed chin (y~29)
-	for y := 1; y <= 30; y++ {
+	// Shield shape: rounded top, pointed bottom
+	for y := 0; y < size; y++ {
 		fy := float64(y)
 		var halfW float64
 
-		if fy <= 4 {
-			// Forehead top - dome
-			t := (fy - 1) / 3.0
-			hw := 8.0 + 5.0*t
-			if hw > 13.0 {
-				hw = 13.0
-			}
-			halfW = hw
-		} else if fy <= 12 {
-			// Wide face area
-			halfW = 13.0
-		} else if fy <= 18 {
-			// Cheeks narrowing slightly
-			t := (fy - 12) / 6.0
-			halfW = 13.0 - 2.0*t
-		} else if fy <= 24 {
-			// Jaw narrowing
-			t := (fy - 18) / 6.0
-			halfW = 11.0 - 5.0*t
+		if fy <= 3 {
+			// Top edge — slight dome
+			t := fy / 3.0
+			halfW = 10.0 + 4.0*t
+		} else if fy <= 14 {
+			// Wide body
+			halfW = 14.0
 		} else {
-			// Chin/beard pointed
-			t := (fy - 24) / 6.0
-			halfW = 6.0 - 5.5*t
+			// Narrowing to point
+			t := (fy - 14.0) / 17.0
+			halfW = 14.0 * (1.0 - t*t)
 			if halfW < 0.5 {
 				halfW = 0.5
 			}
@@ -104,175 +62,98 @@ func GenerateMaskIcon(cr, cg, cb byte) []byte {
 			d := abs(fx - cx)
 			if d <= halfW {
 				a := byte(255)
-				if d > halfW-1.0 {
-					a = byte((halfW - d) * 255)
+				// Anti-alias the edge
+				if d > halfW-1.2 {
+					a = byte((halfW - d) / 1.2 * 255)
 				}
-				setPx(x, y, cr, cg, cb, a)
+				img.SetRGBA(x, y, color.RGBA{R: cr, G: cg, B: cb, A: a})
 			}
 		}
 	}
 
-	// ======== 2. Eyes - two angled slits (Guy Fawkes style) ========
-	// Left eye: angled line from (7,10) to (12,12)
-	// Right eye: mirrored (19,12) to (24,10)
-	for i := 0; i <= 20; i++ {
-		t := float64(i) / 20.0
-		// Left eye
-		lx := 7.0 + 5.0*t
-		ly := 10.0 + 2.0*t
-		for dy := -1; dy <= 1; dy++ {
-			a := byte(255)
-			if dy != 0 {
-				a = 180
-			}
-			setPx(int(lx), int(ly)+dy, dr, dg, db, a)
-		}
-		// Right eye (perfectly mirrored)
-		rx := 31.0 - lx
-		ry := ly
-		for dy := -1; dy <= 1; dy++ {
-			a := byte(255)
-			if dy != 0 {
-				a = 180
-			}
-			setPx(int(rx), int(ry)+dy, dr, dg, db, a)
-		}
+	// Darker border
+	var dr, dg, db byte
+	lum := int(cr)*299 + int(cg)*587 + int(cb)*114
+	if lum > 128000 {
+		dr, dg, db = byte(float64(cr)*0.5), byte(float64(cg)*0.5), byte(float64(cb)*0.5)
+	} else {
+		dr, dg, db = cr/3, cg/3, cb/3
 	}
 
-	// ======== 3. Eyebrows - arched above eyes ========
-	for i := 0; i <= 20; i++ {
-		t := float64(i) / 20.0
-		// Left eyebrow
-		lx := 6.0 + 7.0*t
-		ly := 9.0 - 2.0*t*(1-t)*4 // arch up
-		setPx(int(lx), int(ly), dr, dg, db, 220)
-		setPx(int(lx), int(ly)-1, dr, dg, db, 100)
-		// Right eyebrow (mirrored)
-		rx := 31.0 - lx
-		ry := ly
-		setPx(int(rx), int(ry), dr, dg, db, 220)
-		setPx(int(rx), int(ry)-1, dr, dg, db, 100)
-	}
-
-	// ======== 4. Nose - small triangle ========
-	for y := 14; y <= 17; y++ {
-		w := float64(y-14)*0.7 + 0.5
-		for x := 0; x < size; x++ {
-			fx := float64(x) + 0.5
-			d := abs(fx - cx)
-			if d <= w {
-				a := byte(200)
-				if d > w-0.5 {
-					a = 120
-				}
-				setPx(x, y, dr, dg, db, a)
-			}
-		}
-	}
-
-	// ======== 5. Mustache - Guy Fawkes thin curled mustache ========
-	for i := 0; i <= 30; i++ {
-		t := float64(i) / 30.0
-		// Left side of mustache: from center going left and curling up
-		lx := cx - t*11.0
-		ly := 19.0 + t*t*3.0 - t*4.0 // curves down then up
-		if t > 0.7 {
-			ly -= (t - 0.7) * 6.0 // curl up at tips
-		}
-		setPx(int(lx), int(ly), dr, dg, db, 255)
-		setPx(int(lx), int(ly)+1, dr, dg, db, 150)
-
-		// Right side (mirrored)
-		rx := cx + t*11.0
-		ry := ly
-		setPx(int(rx), int(ry), dr, dg, db, 255)
-		setPx(int(rx), int(ry)+1, dr, dg, db, 150)
-	}
-
-	// ======== 6. Mouth - small smile under mustache ========
-	for i := 0; i <= 16; i++ {
-		t := float64(i) / 16.0
-		x := cx - 3.0 + 6.0*t
-		y := 21.0 + t*(1-t)*3.0 // gentle smile curve
-		setPx(int(x), int(y), dr, dg, db, 200)
-	}
-
-	// ======== 7. Goatee / beard point ========
-	for y := 23; y <= 27; y++ {
-		w := 2.5 - float64(y-23)*0.5
-		if w < 0.3 {
-			w = 0.3
-		}
-		for x := 0; x < size; x++ {
-			fx := float64(x) + 0.5
-			d := abs(fx - cx)
-			if d <= w {
-				a := byte(220)
-				if d > w-0.5 {
-					a = 120
-				}
-				setPx(x, y, dr, dg, db, a)
-			}
-		}
-	}
-
-	// ======== 8. Cheek lines (Guy Fawkes style creases) ========
-	for i := 0; i <= 12; i++ {
-		t := float64(i) / 12.0
-		// Left cheek crease
-		lx := 8.0 + t*3.0
-		ly := 14.0 + t*6.0
-		setPx(int(lx), int(ly), dr, dg, db, 120)
-		// Right cheek crease (mirrored from center)
-		rx := 31.0 - lx
-		ry := ly
-		setPx(int(rx), int(ry), dr, dg, db, 120)
-	}
-
-	// ======== 9. Face outline edge (darker border) ========
-	for y := 1; y <= 30; y++ {
+	for y := 0; y < size; y++ {
 		fy := float64(y)
 		var halfW float64
 
-		if fy <= 4 {
-			t := (fy - 1) / 3.0
-			hw := 8.0 + 5.0*t
-			if hw > 13.0 {
-				hw = 13.0
-			}
-			halfW = hw
-		} else if fy <= 12 {
-			halfW = 13.0
-		} else if fy <= 18 {
-			t := (fy - 12) / 6.0
-			halfW = 13.0 - 2.0*t
-		} else if fy <= 24 {
-			t := (fy - 18) / 6.0
-			halfW = 11.0 - 5.0*t
+		if fy <= 3 {
+			t := fy / 3.0
+			halfW = 10.0 + 4.0*t
+		} else if fy <= 14 {
+			halfW = 14.0
 		} else {
-			t := (fy - 24) / 6.0
-			halfW = 6.0 - 5.5*t
+			t := (fy - 14.0) / 17.0
+			halfW = 14.0 * (1.0 - t*t)
 			if halfW < 0.5 {
 				halfW = 0.5
 			}
 		}
 
-		// Draw left and right border pixels
-		lBorder := int(cx - halfW + 0.5)
-		rBorder := int(cx + halfW - 0.5)
-		ew := sqrt(halfW * 0.1)
-		_ = ew
-		setPx(lBorder, y, dr, dg, db, 160)
-		setPx(lBorder+1, y, dr, dg, db, 60)
-		setPx(rBorder, y, dr, dg, db, 160)
-		setPx(rBorder-1, y, dr, dg, db, 60)
+		for x := 0; x < size; x++ {
+			fx := float64(x) + 0.5
+			d := abs(fx - cx)
+			// Draw border ring (1.5px thick at the edge)
+			if d <= halfW && d > halfW-1.8 {
+				a := byte(200)
+				img.SetRGBA(x, y, color.RGBA{R: dr, G: dg, B: db, A: a})
+			}
+		}
 	}
 
-	return buildICO(size, pixels)
+	// Small lock/checkmark mark in center — a simple "V" for VPN
+	// Draw a vertical line (center of shield)
+	for y := 8; y <= 20; y++ {
+		mx := int(cx)
+		a := byte(255)
+		img.SetRGBA(mx, y, color.RGBA{R: 255, G: 255, B: 255, A: a})
+		img.SetRGBA(mx-1, y, color.RGBA{R: 255, G: 255, B: 255, A: 120})
+		img.SetRGBA(mx+1, y, color.RGBA{R: 255, G: 255, B: 255, A: 120})
+	}
+	// Horizontal bar of a keyhole shape
+	for x := int(cx) - 4; x <= int(cx)+4; x++ {
+		a := byte(255)
+		img.SetRGBA(x, 12, color.RGBA{R: 255, G: 255, B: 255, A: a})
+		img.SetRGBA(x, 13, color.RGBA{R: 255, G: 255, B: 255, A: 180})
+	}
+
+	if runtime.GOOS == "darwin" {
+		return buildPNG(img)
+	}
+	return buildICOFromImage(img)
 }
 
-// buildICO creates a valid ICO file from BGRA pixel data
-func buildICO(size int, pixels []byte) []byte {
+// buildPNG encodes an RGBA image as PNG (for macOS systray)
+func buildPNG(img *image.RGBA) []byte {
+	var buf bytes.Buffer
+	_ = png.Encode(&buf, img)
+	return buf.Bytes()
+}
+
+// buildICOFromImage creates a valid ICO file from an RGBA image (for Windows systray)
+func buildICOFromImage(img *image.RGBA) []byte {
+	size := img.Bounds().Dx()
+
+	// Convert to bottom-up BGRA
+	pixels := make([]byte, size*size*4)
+	for y := 0; y < size; y++ {
+		for x := 0; x < size; x++ {
+			c := img.RGBAAt(x, y)
+			off := ((size - 1 - y) * size + x) * 4
+			pixels[off+0] = c.B
+			pixels[off+1] = c.G
+			pixels[off+2] = c.R
+			pixels[off+3] = c.A
+		}
+	}
+
 	const dibHeaderSize = 40
 	pixelDataSize := size * size * 4
 	maskRowSize := ((size + 31) / 32) * 4
@@ -315,7 +196,7 @@ func buildICO(size int, pixels []byte) []byte {
 	buf = append(buf, 0, 0, 0, 0)
 	buf = append(buf, 0, 0, 0, 0)
 
-	// Pixel data (already bottom-up BGRA)
+	// Pixel data (bottom-up BGRA)
 	buf = append(buf, pixels...)
 
 	// AND mask
@@ -328,8 +209,8 @@ func buildICO(size int, pixels []byte) []byte {
 
 // Placeholder icons (pre-generated for startup speed)
 var (
-	GrayIcon   = GenerateMaskIcon(160, 160, 160)
-	GreenIcon  = GenerateMaskIcon(30, 200, 90)
-	YellowIcon = GenerateMaskIcon(240, 190, 30)
-	RedIcon    = GenerateMaskIcon(220, 55, 55)
+	GrayIcon   = GenerateShieldIcon(160, 160, 160)
+	GreenIcon  = GenerateShieldIcon(30, 200, 90)
+	YellowIcon = GenerateShieldIcon(240, 190, 30)
+	RedIcon    = GenerateShieldIcon(220, 55, 55)
 )

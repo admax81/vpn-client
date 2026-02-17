@@ -90,6 +90,9 @@ func onReady() {
 	// Refresh initial status from service
 	updateUI(service.GetStatusPayload())
 
+	// Auto-open connection window on startup
+	go ShowConnectionWindow()
+
 	// Handle menu clicks
 	go func() {
 		defer logger.Recover("systray-menu-loop")

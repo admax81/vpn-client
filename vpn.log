@@ -1,0 +1,36 @@
+[2026-02-16 21:50:02] INFO: VPN Client starting (combined mode)
+[2026-02-16 21:50:02] INFO: VPN Service initializing...
+[2026-02-16 21:50:02] INFO: Configuration loaded successfully
+[2026-02-16 21:50:02] INFO: VPN Service initialized
+[2026-02-16 21:50:02] INFO: Starting VPN service...
+[2026-02-16 21:50:02] INFO: Auto-connect enabled, will connect in 2 seconds...
+[2026-02-16 21:50:02] INFO: VPN service started successfully
+[2026-02-16 21:50:04] CONN: VPN connecting...
+[2026-02-16 21:50:04] CONN: Initiating ssh connection...
+[2026-02-16 21:50:04] INFO: Creating SSH tunnel
+[2026-02-16 21:50:04] INFO: Starting tunnel...
+[2026-02-16 21:50:04] INFO: Resolved server IP: 38.180.34.244
+[2026-02-16 21:50:04] DEBUG: SSH config built successfully
+[2026-02-16 21:50:04] DEBUG: TCP keepalive enabled (10s)
+[2026-02-16 21:50:04] CONN: Connected to SSH server at 38.180.34.244:5322
+[2026-02-16 21:50:05] INFO: TUN adapter created: VPNClient
+[2026-02-16 21:50:05] INFO: TUN adapter configured with IP: 10.255.0.2/24
+[2026-02-16 21:50:05] DEBUG: SSH session created
+[2026-02-16 21:50:05] INFO: Tunnel setup command started on remote server
+[2026-02-16 21:50:06] ERROR: Remote stderr: Using TUN device: tun0
+
+[2026-02-16 21:50:06] ERROR: Remote stderr: Error: any valid prefix is expected rather than "10.0.0.324".
+Traceback (most recent call last):
+  File "<string>", line 64, in <module>
+  File "/usr/lib64/python3.6/subprocess.py", line 438, in run
+    output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['ip', 'addr', 'add', '10.0.0.324', 'peer', '10.255.0.2', 'dev', 'tun0']' returned non-zero exit status 1.
+
+[2026-02-16 21:50:07] INFO: VPN Client shutting down
+[2026-02-16 21:50:07] INFO: Stopping VPN service...
+[2026-02-16 21:50:07] INFO: VPN service stopped
+[2026-02-16 21:52:31] ERROR: Failed to start tunnel: failed to request tunnel: failed to read READY signal: EOF
+[2026-02-16 21:52:31] ERROR: VPN connection error: failed to request tunnel: failed to read READY signal: EOF
+[2026-02-16 22:01:49] INFO: VPN Client shutting down
+[2026-02-16 22:01:49] INFO: Stopping VPN service...
+[2026-02-16 22:01:49] INFO: VPN service stopped

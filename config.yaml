@@ -1,0 +1,46 @@
+version: 1
+protocol: ssh
+autostart: true
+wireguard:
+    private_key: YOUR_PRIVATE_KEY_BASE64
+    address: 10.255.0.2/24
+    peer:
+        public_key: SERVER_PUBLIC_KEY_BASE64
+        endpoint: vpn.example.com:51820
+        persistent_keepalive: 25
+openvpn:
+    config_path: /path/to/client.ovpn
+    auth_user: ""
+    auth_pass: ""
+ssh:
+    host: 38.180.34.244
+    port: 5322
+    user: root
+    key_path: D:\ssh_poland_private_ossh
+    remote_tun_addr: 10.0.0.3/24
+    local_tun_addr: 10.255.0.2/24
+routing:
+    default_route: false
+    include_ips:
+        - 10.0.0.0/8
+        - 172.16.0.0/12
+        - 192.168.100.0/24
+    include_domains:
+        - internal.company.com
+        - git.company.io
+        - '*.private.example.com'
+    dns_refresh_interval: 300
+dns:
+    servers:
+        - 8.8.8.8
+    split_dns: true
+    domains:
+        - company.com
+        - internal.local
+interface:
+    name: VPNClient
+    mtu: 1420
+    metric: 5
+killswitch:
+    enabled: false
+    allow_lan: true

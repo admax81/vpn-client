@@ -1,0 +1,113 @@
+# VPN Client Configuration
+#
+# Config file location: next to the executable (config.yaml)
+# Same directory as vpn-client.exe / vpn-client binary.
+
+version: 1
+
+# ============================================================================
+# PROTOCOL SELECTION
+# ============================================================================
+# Available: wireguard, openvpn, ssh
+protocol: wireguard
+
+# Auto-connect on startup
+autostart: false
+
+# ============================================================================
+# WIREGUARD
+# ============================================================================
+wireguard:
+  private_key: "YOUR_PRIVATE_KEY_BASE64"
+  address: "10.255.0.2/24"
+  dns: "10.255.0.1"
+  peer:
+    public_key: "SERVER_PUBLIC_KEY_BASE64"
+    endpoint: "vpn.example.com:51820"
+    persistent_keepalive: 25
+    # preshared_key: "PRESHARED_KEY_BASE64"
+
+# ============================================================================
+# OPENVPN
+# ============================================================================
+openvpn:
+  # Path to .ovpn config file
+  config_path: "/path/to/client.ovpn"
+
+  # Optional auth (if not in .ovpn):
+  # auth_user: "username"
+  # auth_pass: "password"
+
+# ============================================================================
+# SSH TUNNEL
+# ============================================================================
+# Requires: PermitTunnel yes in sshd_config, net.ipv4.ip_forward=1
+ssh:
+  host: "ssh.example.com"
+  port: 22
+  user: "vpnuser"
+  key_path: "~/.ssh/id_ed25519"
+  remote_tun_addr: "10.255.0.1/24"
+  local_tun_addr: "10.255.0.2/24"
+
+  # KeepAlive: sends SSH keepalive requests to detect dead connections.
+  # interval in seconds (default: 10), retries before reconnect (default: 3).
+  keepalive_interval: 10
+  keepalive_retries: 3
+
+  # routing_file is no longer used — routes are stored locally in routes.txt
+  # next to the application executable.
+  # Format: one IP/CIDR or domain per line, '#' for comments.
+
+# ============================================================================
+# SPLIT TUNNELING (ROUTING)
+# ============================================================================
+# default_route: When true, routes ALL traffic through VPN (full tunnel).
+#                When false, only specified IPs and domains go through VPN (split tunnel).
+routing:
+  # Route all traffic through VPN (default: false)
+  default_route: false
+
+  # Only used when default_route is false
+  # Only traffic to these destinations goes through VPN.
+  include_ips:
+    - "10.0.0.0/8"
+    - "172.16.0.0/12"
+    - "192.168.100.0/24"
+
+  include_domains:
+    - "internal.company.com"
+    - "git.company.io"
+    - "*.private.example.com"
+
+  # Re-resolve domains interval (seconds)
+  dns_refresh_interval: 300
+
+# ============================================================================
+# DNS
+# ============================================================================
+dns:
+  servers:
+    - "10.255.0.1"
+    - "10.255.0.2"
+
+  # Use VPN DNS only for specific domains
+  split_dns: true
+  domains:
+    - "company.com"
+    - "internal.local"
+
+# ============================================================================
+# NETWORK INTERFACE
+# ============================================================================
+interface:
+  name: "VPNClient"
+  mtu: 1420
+  metric: 5
+
+# ============================================================================
+# KILL SWITCH
+# ============================================================================
+killswitch:
+  enabled: false
+  allow_lan: true

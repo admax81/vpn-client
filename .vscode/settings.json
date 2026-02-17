@@ -1,0 +1,20 @@
+{
+  // Уменьшить контекст для Copilot
+  "github.copilot.advanced": {
+    "length": 2000,
+    "inlineSuggestCount": 3
+  },
+  
+  // Исключить файлы из поиска и контекста
+  "files.exclude": {
+    "**/*.syso": true,
+    "**/*.exe": true
+  },
+  
+  "search.exclude": {
+    "**/vendor": true,
+    "**/build": true,
+    "**/dist": true,
+    "**/*.exe": true
+  }
+}

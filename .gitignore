@@ -1,0 +1,32 @@
+# Build artifacts
+*.exe
+*.exe~
+*.so
+*.dylib
+
+# DLLs (except embedded resources)
+*.dll
+!resources/wintun.dll
+
+# Test binary
+*.test
+
+# Go workspace
+go.work
+go.work.sum
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Resource objects (generated)
+*.syso
+
+# Debug binaries
+__debug_bin*

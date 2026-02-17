@@ -1,0 +1,18 @@
+# Build artifacts
+*.exe
+*.syso
+*.o
+*.a
+
+# Resources
+resources/
+
+# Example configs
+configs/config.example.yaml
+
+# Vendor/dependencies
+vendor/
+
+# Build outputs
+build/
+dist/
